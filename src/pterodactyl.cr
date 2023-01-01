@@ -1,6 +1,10 @@
-# TODO: Write documentation for `Ptero`
+require "crest"
+require "json"
+require "uri/params"
+
+require "./application"
+require "./models/*"
+
 module Pterodactyl
   VERSION = "0.1.0"
-
-  # TODO: Put your code here
 end

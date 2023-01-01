@@ -1,9 +1,12 @@
 name: pterodactyl
 version: 0.1.0
+crystal: 1.6.0
 
 authors:
   - Devonte W <github.com/devnote-dev>
 
-crystal: 1.6.0
+dependencies:
+  crest:
+    github: mamantoha/crest
 
 license: MIT
