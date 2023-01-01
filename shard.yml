@@ -1,0 +1,9 @@
+name: pterodactyl
+version: 0.1.0
+
+authors:
+  - Devonte W <github.com/devnote-dev>
+
+crystal: 1.6.0
+
+license: MIT
