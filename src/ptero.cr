@@ -5,6 +5,6 @@ require "uri/params"
 require "./application"
 require "./models/*"
 
-module Pterodactyl
+module Ptero
   VERSION = "0.1.0"
 end

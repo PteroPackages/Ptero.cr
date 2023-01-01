@@ -1,4 +1,4 @@
-module Pterodactyl::Models
+module Ptero::Models
   struct FractalItem(M)
     include JSON::Serializable
 

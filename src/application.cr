@@ -1,4 +1,4 @@
-module Pterodactyl
+module Ptero
   class Application
     DEFAULT_HEADERS = {
       "User-Agent" => "Ptero.cr Application v#{VERSION}",

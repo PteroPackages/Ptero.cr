@@ -1,4 +1,4 @@
-module Pterodactyl::Models
+module Ptero::Models
   struct User
     include JSON::Serializable
 

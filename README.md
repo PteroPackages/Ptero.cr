@@ -8,7 +8,7 @@ TODO: Write a description here
 
    ```yaml
    dependencies:
-     pterodactyl:
+     ptero:
        github: PteroPackages/Ptero.cr
    ```
 
@@ -17,7 +17,7 @@ TODO: Write a description here
 ## Usage
 
 ```crystal
-require "pterodactyl"
+require "ptero"
 ```
 
 TODO: Write usage instructions here

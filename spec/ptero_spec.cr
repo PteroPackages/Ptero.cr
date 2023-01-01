@@ -1,6 +1,6 @@
 require "./spec_helper"
 
-describe Pterodactyl do
+describe Ptero do
   # TODO: Write tests
 
   it "works" do
