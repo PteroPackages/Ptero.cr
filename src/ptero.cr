@@ -3,6 +3,7 @@ require "json"
 require "uri/params"
 
 require "./application"
+require "./errors"
 require "./models/*"
 
 module Ptero

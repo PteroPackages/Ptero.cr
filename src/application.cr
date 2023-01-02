@@ -33,6 +33,21 @@ module Ptero
       end
     end
 
+    def resolve_error(ex : Crest::RequestFailed) : NoReturn
+      case ex.http_code
+      when 401, 403
+        raise AuthFailedError.new(ex.http_code)
+      when 404
+        raise NotFoundError.new
+      when 409
+        raise ConflictError.new
+      # when 429
+      # TODO: implement ratelimiter, for now just raise
+      else
+        raise ex
+      end
+    end
+
     def get_users(*, page : Int32? = nil, per_page : Int32? = nil,
                   filter : {String, String}? = nil, include includes : Array(String)? = nil,
                   sort : String? = nil) : Array(Models::User)
@@ -40,6 +55,8 @@ module Ptero
       model = Models::FractalList(Models::User).from_json res.body
 
       model.data.map &.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
     end
 
     def get_user(id : Int32, *, page : Int32? = nil, per_page : Int32? = nil,
@@ -49,6 +66,8 @@ module Ptero
       model = Models::FractalItem(Models::User).from_json res.body
 
       model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
     end
 
     def create_user(username : String, email : String, first_name : String, last_name : String,
@@ -69,6 +88,8 @@ module Ptero
       model = Models::FractalItem(Models::User).from_json res.body
 
       model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
     end
 
     def update_user(id : Int32, *, username : String? = nil, email : String? = nil,
@@ -91,10 +112,14 @@ module Ptero
       model = Models::FractalItem(Models::User).from_json res.body
 
       model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
     end
 
     def delete_user(id : Int32) : Nil
       @rest.delete "/api/application/users/#{id}"
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
     end
   end
 end
