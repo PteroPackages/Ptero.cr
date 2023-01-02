@@ -10,8 +10,7 @@ module Ptero::Models
     getter first_name : String
     getter last_name : String
     getter language : String
-    @[JSON::Field(key: "root_admin")]
-    getter? admin : Bool
+    getter? root_admin : Bool
     @[JSON::Field(key: "2fa")]
     getter? two_factor : Bool
     getter created_at : Time
