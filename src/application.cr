@@ -1,9 +1,9 @@
 module Ptero
   class Application
     DEFAULT_HEADERS = {
-      "User-Agent" => "Ptero.cr Application v#{VERSION}",
+      "User-Agent"   => "Ptero.cr Application v#{VERSION}",
       "Content-Type" => "application/json",
-      "Accept" => "application/json",
+      "Accept"       => "application/json",
     }
 
     getter url : String
@@ -41,8 +41,8 @@ module Ptero
         raise NotFoundError.new
       when 409
         raise ConflictError.new
-      # when 429
-      # TODO: implement ratelimiter, for now just raise
+        # when 429
+        # TODO: implement ratelimiter, for now just raise
       else
         raise ex
       end
@@ -74,10 +74,10 @@ module Ptero
                     root_admin : Bool, *, language : String? = nil, external_id : String? = nil,
                     password : String? = nil) : Models::User
       data = {
-        :username => username,
-        :email => email,
+        :username   => username,
+        :email      => email,
         :first_name => first_name,
-        :last_name => last_name,
+        :last_name  => last_name,
         :root_admin => root_admin,
       }
       data[:language] = language if language
@@ -98,12 +98,12 @@ module Ptero
                     password : String? = nil) : Models::User
       user = get_user id
       data = {
-        :username => username || user.username,
-        :email => email || user.email,
-        :first_name => first_name || user.first_name,
-        :last_name => last_name || user.last_name,
-        :root_admin => root_admin.nil? ? user.root_admin? : root_admin,
-        :language => language || user.language,
+        :username    => username || user.username,
+        :email       => email || user.email,
+        :first_name  => first_name || user.first_name,
+        :last_name   => last_name || user.last_name,
+        :root_admin  => root_admin.nil? ? user.root_admin? : root_admin,
+        :language    => language || user.language,
         :external_id => external_id || user.external_id,
       }
       data[:password] = password if password
@@ -134,8 +134,8 @@ module Ptero
     end
 
     def get_server(id : Int32, *, page : Int32? = nil, per_page : Int32? = nil,
-                  filter : {String, String}? = nil, include includes : Array(String)? = nil,
-                  sort : String? = nil) : Models::AppServer
+                   filter : {String, String}? = nil, include includes : Array(String)? = nil,
+                   sort : String? = nil) : Models::AppServer
       res = @rest.get "/api/application/servers/#{id}?" + resolve_query(page, per_page, filter, includes, sort)
       model = Models::FractalItem(Models::AppServer).from_json res.body
 
