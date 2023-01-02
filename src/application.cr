@@ -50,5 +50,51 @@ module Ptero
 
       model.attributes
     end
+
+    def create_user(username : String, email : String, first_name : String, last_name : String,
+                    root_admin : Bool, *, language : String? = nil, external_id : String? = nil,
+                    password : String? = nil) : Models::User
+      data = {
+        :username => username,
+        :email => email,
+        :first_name => first_name,
+        :last_name => last_name,
+        :root_admin => root_admin,
+      }
+      data[:language] = language if language
+      data[:external_id] = external_id if external_id
+      data[:password] = password if password
+
+      res = @rest.post "/api/application/users", data.to_json
+      model = Models::FractalItem(Models::User).from_json res.body
+
+      model.attributes
+    end
+
+    def update_user(id : Int32, *, username : String? = nil, email : String? = nil,
+                    first_name : String? = nil, last_name : String? = nil,
+                    root_admin : Bool? = nil, language : String? = nil, external_id : String? = nil,
+                    password : String? = nil) : Models::User
+      user = get_user id
+      data = {
+        :username => username || user.username,
+        :email => email || user.email,
+        :first_name => first_name || user.first_name,
+        :last_name => last_name || user.last_name,
+        :root_admin => root_admin.nil? ? user.root_admin? : root_admin,
+        :language => language || user.language,
+        :external_id => external_id || user.external_id,
+      }
+      data[:password] = password if password
+
+      res = @rest.patch "/api/application/users/#{id}", data.to_json
+      model = Models::FractalItem(Models::User).from_json res.body
+
+      model.attributes
+    end
+
+    def delete_user(id : Int32) : Nil
+      @rest.delete "/api/application/users/#{id}"
+    end
   end
 end
