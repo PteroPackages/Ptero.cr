@@ -121,5 +121,27 @@ module Ptero
     rescue ex : Crest::RequestFailed
       resolve_error ex
     end
+
+    def get_servers(*, page : Int32? = nil, per_page : Int32? = nil,
+                    filter : {String, String}? = nil, include includes : Array(String)? = nil,
+                    sort : String? = nil) : Array(Models::AppServer)
+      res = @rest.get "/api/application/servers?" + resolve_query(page, per_page, filter, includes, sort)
+      model = Models::FractalList(Models::AppServer).from_json res.body
+
+      model.data.map &.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
+    def get_server(id : Int32, *, page : Int32? = nil, per_page : Int32? = nil,
+                  filter : {String, String}? = nil, include includes : Array(String)? = nil,
+                  sort : String? = nil) : Models::AppServer
+      res = @rest.get "/api/application/servers/#{id}?" + resolve_query(page, per_page, filter, includes, sort)
+      model = Models::FractalItem(Models::AppServer).from_json res.body
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
   end
 end
