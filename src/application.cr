@@ -1,4 +1,5 @@
 module Ptero
+  # A class for interacting with the application API.
   class Application
     DEFAULT_HEADERS = {
       "User-Agent"   => "Ptero.cr Application v#{VERSION}",
@@ -18,6 +19,13 @@ module Ptero
       )
     end
 
+    # Resolves a query string from the given parameters. This function applies its own validation
+    # rules for certain arguments silently instead of raising an exception.
+    #
+    # ```
+    # app.resolve_query(per_page: 20, include: ["foo", "bar"]) # => "per_page=20&include=foo,bar"
+    # app.resolve_query(page: 0, per_page: 150) # => "page=1&per_page=100"
+    # ```
     def resolve_query(page : Int32?, per_page : Int32?, filter : {String, String}?,
                       includes : Array(String)?, sort : String?) : String
       URI::Params.build do |params|
@@ -33,6 +41,7 @@ module Ptero
       end
     end
 
+    # Resolves a library-specific error from a failed HTTP request (error response).
     def resolve_error(ex : Crest::RequestFailed) : NoReturn
       case ex.http_code
       when 401, 403
@@ -48,6 +57,16 @@ module Ptero
       end
     end
 
+    # Gets a list of users from the panel with the specified query parameters (if set).
+    #
+    # ## Parameters
+    #
+    # * page: the page number to fetch from (default is 1)
+    # * per_page: the numer of user objects to return (default is 50).
+    # * filter: an argument tuple to filter users from, the first being the field and the second
+    # being the value to query
+    # * include: additional resources to include in the response
+    # * sort: an argument to sort users in the response by
     def get_users(*, page : Int32? = nil, per_page : Int32? = nil,
                   filter : {String, String}? = nil, include includes : Array(String)? = nil,
                   sort : String? = nil) : Array(Models::User)
@@ -59,10 +78,13 @@ module Ptero
       resolve_error ex
     end
 
-    def get_user(id : Int32, *, page : Int32? = nil, per_page : Int32? = nil,
-                 filter : {String, String}? = nil, include includes : Array(String)? = nil,
-                 sort : String? = nil) : Models::User
-      res = @rest.get "/api/application/users/#{id}?" + resolve_query(page, per_page, filter, includes, sort)
+    # Gets a specific user by its ID.
+    #
+    # ## Parameters
+    #
+    # * include: additional resources to include in the response
+    def get_user(id : Int32, *, include includes : Array(String)? = nil) : Models::User
+      res = @rest.get "/api/application/users/#{id}?" + resolve_query(nil, nil, nil, includes, nil)
       model = Models::FractalItem(Models::User).from_json res.body
 
       model.attributes
@@ -70,6 +92,35 @@ module Ptero
       resolve_error ex
     end
 
+    # Creates a user on the panel with the given fields.
+    #
+    # ## Fields
+    #
+    # * username: the username for the user
+    # * email: the email for the user
+    # * first_name: the first name of the user
+    # * last_name: the last name of the user
+    # * root_admin: whether the user should have administrative privileges
+    # * language (optional): the language (or locale) for the user
+    # * external_id (optional): an external identifier for the user
+    # * password (optional): the password for the user
+    #
+    # ```
+    # user = app.create_user("example", "test@example.com", "example", "user", false)
+    # pp user # => Ptero::Models::User(
+    #  @created_at=2022-01-01 16:04:03.0 +00:00,
+    #  @email="test@example.com",
+    #  @external_id=nil,
+    #  @first_name="example",
+    #  @id=7,
+    #  @language="en",
+    #  @last_name="user",
+    #  @root_admin=false,
+    #  @two_factor=false,
+    #  @updated_at=2022-01-01 16:04:03.0 +00:00,
+    #  @username="example",
+    #  @uuid="530d7e97-5a35-40b4-a0a8-68ea487bd384")
+    # ```
     def create_user(username : String, email : String, first_name : String, last_name : String,
                     root_admin : Bool, *, language : String? = nil, external_id : String? = nil,
                     password : String? = nil) : Models::User
@@ -92,6 +143,9 @@ module Ptero
       resolve_error ex
     end
 
+    # Updates a user specified by its ID with the given fields (same as the fields for
+    # [`create_user`]). Any fields that aren't specified will be filled with the existing value
+    # from the panel.
     def update_user(id : Int32, *, username : String? = nil, email : String? = nil,
                     first_name : String? = nil, last_name : String? = nil,
                     root_admin : Bool? = nil, language : String? = nil, external_id : String? = nil,
@@ -116,12 +170,23 @@ module Ptero
       resolve_error ex
     end
 
+    # Deletes a user by its ID.
     def delete_user(id : Int32) : Nil
       @rest.delete "/api/application/users/#{id}"
     rescue ex : Crest::RequestFailed
       resolve_error ex
     end
 
+    # Gets a list of servers from the panel with the specified query parameters (if set).
+    #
+    # ## Parameters
+    #
+    # * page: the page number to fetch from (default is 1)
+    # * per_page: the numer of user objects to return (default is 50).
+    # * filter: an argument tuple to filter servers from, the first being the field and the second
+    # being the value to query
+    # * include: additional resources to include in the response
+    # * sort: an argument to sort servers in the response by
     def get_servers(*, page : Int32? = nil, per_page : Int32? = nil,
                     filter : {String, String}? = nil, include includes : Array(String)? = nil,
                     sort : String? = nil) : Array(Models::AppServer)
@@ -133,10 +198,13 @@ module Ptero
       resolve_error ex
     end
 
-    def get_server(id : Int32, *, page : Int32? = nil, per_page : Int32? = nil,
-                   filter : {String, String}? = nil, include includes : Array(String)? = nil,
-                   sort : String? = nil) : Models::AppServer
-      res = @rest.get "/api/application/servers/#{id}?" + resolve_query(page, per_page, filter, includes, sort)
+    # Gets a specific server by its ID.
+    #
+    # ## Parameters
+    #
+    # * include: additional resources to include in the response
+    def get_server(id : Int32, *, include includes : Array(String)? = nil) : Models::AppServer
+      res = @rest.get "/api/application/servers/#{id}?" + resolve_query(nil, nil, nil, includes, nil)
       model = Models::FractalItem(Models::AppServer).from_json res.body
 
       model.attributes
