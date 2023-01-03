@@ -108,18 +108,18 @@ module Ptero
     # ```crystal
     # user = app.create_user("example", "test@example.com", "example", "user", false)
     # pp user # => Ptero::Models::User(
-    #  @created_at=2022-01-01 16:04:03.0 +00:00,
-    #  @email="test@example.com",
-    #  @external_id=nil,
-    #  @first_name="example",
-    #  @id=7,
-    #  @language="en",
-    #  @last_name="user",
-    #  @root_admin=false,
-    #  @two_factor=false,
-    #  @updated_at=2022-01-01 16:04:03.0 +00:00,
-    #  @username="example",
-    #  @uuid="530d7e97-5a35-40b4-a0a8-68ea487bd384")
+    # #  @created_at=2022-01-01 16:04:03.0 +00:00,
+    # #  @email="test@example.com",
+    # #  @external_id=nil,
+    # #  @first_name="example",
+    # #  @id=7,
+    # #  @language="en",
+    # #  @last_name="user",
+    # #  @root_admin=false,
+    # #  @two_factor=false,
+    # #  @updated_at=2022-01-01 16:04:03.0 +00:00,
+    # #  @username="example",
+    # #  @uuid="530d7e97-5a35-40b4-a0a8-68ea487bd384")
     # ```
     def create_user(username : String, email : String, first_name : String, last_name : String,
                     root_admin : Bool, *, language : String? = nil, external_id : String? = nil,
