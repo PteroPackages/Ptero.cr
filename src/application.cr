@@ -22,7 +22,7 @@ module Ptero
     # Resolves a query string from the given parameters. This function applies its own validation
     # rules for certain arguments silently instead of raising an exception.
     #
-    # ```
+    # ```crystal
     # app.resolve_query(per_page: 20, include: ["foo", "bar"]) # => "per_page=20&include=foo,bar"
     # app.resolve_query(page: 0, per_page: 150) # => "page=1&per_page=100"
     # ```
@@ -101,11 +101,11 @@ module Ptero
     # * first_name: the first name of the user
     # * last_name: the last name of the user
     # * root_admin: whether the user should have administrative privileges
-    # * language (optional): the language (or locale) for the user
+    # * language (optional): the language or locale for the user
     # * external_id (optional): an external identifier for the user
     # * password (optional): the password for the user
     #
-    # ```
+    # ```crystal
     # user = app.create_user("example", "test@example.com", "example", "user", false)
     # pp user # => Ptero::Models::User(
     #  @created_at=2022-01-01 16:04:03.0 +00:00,
@@ -144,7 +144,7 @@ module Ptero
     end
 
     # Updates a user specified by its ID with the given fields (same as the fields for
-    # [`create_user`]). Any fields that aren't specified will be filled with the existing value
+    # `create_user`). Any fields that aren't specified will be filled with the existing value
     # from the panel.
     def update_user(id : Int32, *, username : String? = nil, email : String? = nil,
                     first_name : String? = nil, last_name : String? = nil,
