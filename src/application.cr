@@ -211,5 +211,33 @@ module Ptero
     rescue ex : Crest::RequestFailed
       resolve_error ex
     end
+
+    # def create_server
+
+    # def update_server_build
+
+    # def update_server_details
+
+    # def update_server_startup
+
+    # Suspends a specified server.
+    def suspend_server(id : Int32) : Nil
+      @rest.post "/api/application/servers/#{id}/suspend"
+    end
+
+    # Unsuspends a specified server.
+    def unsuspend_server(id : Int32) : Nil
+      @rest.post "/api/application/servers/#{id}/unsuspend"
+    end
+
+    # Triggers the reinstall process for a specified server.
+    def reinstall_server(id : Int32) : Nil
+      @rest.post "/api/application/servers/#{id}/reinstall"
+    end
+
+    # Deletes a server by its ID.
+    def delete_server(id : Int32, *, with_force : Bool = false) : Nil
+      @rest.delete "/api/application/servers/#{id}" + (with_force ? "/force" : "")
+    end
   end
 end
