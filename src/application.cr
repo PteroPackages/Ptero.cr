@@ -22,9 +22,9 @@ module Ptero
     # Resolves a query string from the given parameters. This function applies its own validation
     # rules for certain arguments silently instead of raising an exception.
     #
-    # ```crystal
+    # ```
     # app.resolve_query(per_page: 20, include: ["foo", "bar"]) # => "per_page=20&include=foo,bar"
-    # app.resolve_query(page: 0, per_page: 150) # => "page=1&per_page=100"
+    # app.resolve_query(page: 0, per_page: 150)                # => "page=1&per_page=100"
     # ```
     def resolve_query(page : Int32?, per_page : Int32?, filter : {String, String}?,
                       includes : Array(String)?, sort : String?) : String
@@ -62,7 +62,7 @@ module Ptero
     # ## Parameters
     #
     # * page: the page number to fetch from (default is 1)
-    # * per_page: the numer of user objects to return (default is 50).
+    # * per_page: the number of user objects to return (default is 50).
     # * filter: an argument tuple to filter users from, the first being the field and the second
     # being the value to query
     # * include: additional resources to include in the response
@@ -115,7 +115,7 @@ module Ptero
     # * external_id (optional): an external identifier for the user
     # * password (optional): the password for the user
     #
-    # ```crystal
+    # ```
     # user = app.create_user("example", "test@example.com", "example", "user", false)
     # pp user # => Ptero::Models::User(
     # #  @created_at=2022-01-01 16:04:03.0 +00:00,
@@ -192,7 +192,7 @@ module Ptero
     # ## Parameters
     #
     # * page: the page number to fetch from (default is 1)
-    # * per_page: the numer of user objects to return (default is 50).
+    # * per_page: the number of user objects to return (default is 50).
     # * filter: an argument tuple to filter servers from, the first being the field and the second
     # being the value to query
     # * include: additional resources to include in the response
@@ -258,6 +258,50 @@ module Ptero
     # Deletes a server by its ID.
     def delete_server(id : Int32, *, with_force : Bool = false) : Nil
       @rest.delete "/api/application/servers/#{id}" + (with_force ? "/force" : "")
+    end
+
+    # Gets a list of nodes from the panel with the specified query parameters (if set).
+    #
+    # ## Parameters
+    #
+    # * page: the page number to fetch from (default is 1)
+    # * per_page: the number of node objects to return (default is 50).
+    # * filter: an argument tuple to filter nodes from, the first being the field and the second
+    # being the value to query
+    # * include: additional resources to include in the response
+    # * sort: an argument to sort nodes in the response by
+    def get_nodes(*, page : Int32? = nil, per_page : Int32? = nil,
+                  filter : {String, String}? = nil, include includes : Array(String)? = nil,
+                  sort : String? = nil) : Array(Models::Node)
+      res = @rest.get "/api/application/nodes?" + resolve_query(page, per_page, filter, includes, sort)
+      model = Models::FractalList(Models::Node).from_json res.body
+
+      model.data.map &.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
+    # Gets a specific node by its ID.
+    #
+    # ## Parameters
+    #
+    # * include: additional resources to include in the response
+    def get_node(id : Int32, *, include includes : Array(String)? = nil) : Models::Node
+      res = @rest.get "/api/application/nodes/#{id}?" + resolve_query(nil, nil, nil, includes, nil)
+      model = Models::FractalItem(Models::Node).from_json res.body
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
+    # Gets the configuration structure for a specific node.
+    def get_node_configuration(id : Int32) : Models::NodeConfiguration
+      res = @rest.get "/api/application/nodes/#{id}/configuration"
+
+      Models::NodeConfiguration.from_json res.body
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
     end
   end
 end
