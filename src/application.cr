@@ -92,6 +92,16 @@ module Ptero
       resolve_error ex
     end
 
+    # Gets a specific user by its external identifier.
+    def get_user(id : String) : Models::User
+      res = @rest.get "/api/application/users/external/" + id
+      model = Models::FractalItem(Models::User).from_json res.body
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
     # Creates a user on the panel with the given fields.
     #
     # ## Fields
@@ -205,6 +215,16 @@ module Ptero
     # * include: additional resources to include in the response
     def get_server(id : Int32, *, include includes : Array(String)? = nil) : Models::AppServer
       res = @rest.get "/api/application/servers/#{id}?" + resolve_query(nil, nil, nil, includes, nil)
+      model = Models::FractalItem(Models::AppServer).from_json res.body
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
+    # Gets a specific server by its external identifier.
+    def get_server(id : String) : Models::AppServer
+      res = @rest.get "/api/application/servers/external/" + id
       model = Models::FractalItem(Models::AppServer).from_json res.body
 
       model.attributes
