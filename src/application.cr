@@ -116,7 +116,13 @@ module Ptero
     # * password (optional): the password for the user
     #
     # ```
-    # user = app.create_user("example", "test@example.com", "example", "user", false)
+    # user = app.create_user(
+    #   username: "example",
+    #   email: "test@example.com",
+    #   first_name: "example",
+    #   last_name: "user",
+    #   root_admin: false
+    # )
     # pp user # => Ptero::Models::User(
     # #  @created_at=2022-01-01 16:04:03.0 +00:00,
     # #  @email="test@example.com",
@@ -131,8 +137,8 @@ module Ptero
     # #  @username="example",
     # #  @uuid="530d7e97-5a35-40b4-a0a8-68ea487bd384")
     # ```
-    def create_user(username : String, email : String, first_name : String, last_name : String,
-                    root_admin : Bool, *, language : String? = nil, external_id : String? = nil,
+    def create_user(*, username : String, email : String, first_name : String, last_name : String,
+                    root_admin : Bool, language : String? = nil, external_id : String? = nil,
                     password : String? = nil) : Models::User
       data = {
         :username   => username,
@@ -232,7 +238,129 @@ module Ptero
       resolve_error ex
     end
 
-    # def create_server
+    # Creates a user on the panel with the given fields, using the allocation object to select the
+    # node and additional allocations if specified.
+    #
+    # ## Fields
+    #
+    # * name: the name of the server
+    # * description (optional): the description of the server
+    # * external_id (optional): an external identifier for the server
+    # * user: the ID of the user the server will belong to
+    # * egg: the ID of the egg to use for the server
+    # * docker_image: the docker image to use for the server
+    # * startup: the startup command for the server
+    # * oom_disabled: whether the OOM killer should be disabled for the server
+    # * limits: an object containing the server limits
+    # * feature_limits: an object containing the server feature limits
+    # * allocation: an object containing allocation data including where the server will be created
+    # * start_on_completion: whether the server should start once installed
+    #
+    # ```
+    # server = app.create_server(
+    #   name: "crystal bot",
+    #   user: 5,
+    #   egg: 30,
+    #   docker_image: "ghcr.io/parkervcp/yolks:crystal_1.6",
+    #   startup: %(crystal run {{CRYSTAL_FILE}}}),
+    #   environment: {"USER_UPLOAD" => false, "AUTO_UPDATE" => false, "CRYSTAL_FILE" => "src/main.cr"},
+    #   limits: Ptero::Models::Limits.new(memory: 1024, disk: 1024, swap: 0, cpu: 100, io: 500),
+    #   feature_limits: Ptero::Models::FeatureLimits.new(0, 0, 0),
+    #   allocation: Ptero::Models::AllocationData.new(1),
+    #   start_on_completion: false,
+    # ) # => Ptero::Models::AppServer(@id=7, @external_id=nil, @uuid="...", ...)
+    # ```
+    def create_server(*, name : String, description : String? = nil, external_id : String? = nil,
+                      user : Int32, egg : Int32, docker_image : String, startup : String,
+                      environment : Hash(String, String | Int32 | Bool | Nil), skip_scripts : Bool,
+                      oom_disabled : Bool, limits : Models::Limits,
+                      feature_limits : Models::FeatureLimits, allocation : Models::AllocationData,
+                      start_on_completion : Bool) : Models::AppServer
+      data = {
+        name:                name,
+        description:         description,
+        external_id:         external_id,
+        user:                user,
+        egg:                 egg,
+        docker_image:        docker_image,
+        startup:             startup,
+        environment:         environment,
+        skip_scripts:        skip_scripts,
+        oom_disabled:        oom_disabled,
+        limits:              limits,
+        feature_limits:      feature_limits,
+        allocation:          allocation,
+        start_on_completion: start_on_completion,
+      }
+      res = @rest.post "/api/application/servers", data.to_json
+      model = Models::FractalItem(Models::AppServer).from_json res.body
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
+    # Creates a user on the panel with the given fields, using the deploy object to find node
+    # suitable to deploy the server onto.
+    #
+    # ## Fields
+    #
+    # * name: the name of the server
+    # * description (optional): the description of the server
+    # * external_id (optional): an external identifier for the server
+    # * user: the ID of the user the server will belong to
+    # * egg: the ID of the egg to use for the server
+    # * docker_image: the docker image to use for the server
+    # * startup: the startup command for the server
+    # * oom_disabled: whether the OOM killer should be disabled for the server
+    # * limits: an object containing the server limits
+    # * feature_limits: an object containing the server feature limits
+    # * deploy: an object containing deployment data including location and port information
+    # * start_on_completion: whether the server should start once installed
+    #
+    # ```
+    # server = app.create_server(
+    #   name: "crystal bot",
+    #   user: 5,
+    #   egg: 30,
+    #   docker_image: "ghcr.io/parkervcp/yolks:crystal_1.6",
+    #   startup: %(crystal run {{CRYSTAL_FILE}}}),
+    #   environment: {"USER_UPLOAD" => false, "AUTO_UPDATE" => false, "CRYSTAL_FILE" => "src/main.cr"},
+    #   limits: Ptero::Models::Limits.new(memory: 1024, disk: 1024, swap: 0, cpu: 100, io: 500),
+    #   feature_limits: Ptero::Models::FeatureLimits.new(0, 0, 0),
+    #   deploy: Ptero::Models::DeployData.new([2, 3], ["5000-5030"], false),
+    #   start_on_completion: false,
+    # ) # => Ptero::Models::AppServer(@id=7, @external_id=nil, @uuid="...", ...)
+    # ```
+    def create_server(*, name : String, description : String? = nil, external_id : String? = nil,
+                      user : Int32, egg : Int32, docker_image : String, startup : String,
+                      environment : Hash(String, String | Int32 | Bool | Nil), skip_scripts : Bool,
+                      oom_disabled : Bool, limits : Models::Limits,
+                      feature_limits : Models::FeatureLimits, deploy : Models::DeployData,
+                      start_on_completion : Bool) : Models::AppServer
+      data = {
+        name:                name,
+        description:         description,
+        external_id:         external_id,
+        user:                user,
+        egg:                 egg,
+        docker_image:        docker_image,
+        startup:             startup,
+        environment:         environment,
+        skip_scripts:        skip_scripts,
+        oom_disabled:        oom_disabled,
+        limits:              limits,
+        feature_limits:      feature_limits,
+        deploy:              deploy,
+        start_on_completion: start_on_completion,
+      }
+      res = @rest.post "/api/application/servers", data.to_json
+      model = Models::FractalItem(Models::AppServer).from_json res.body
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
 
     # def update_server_build
 

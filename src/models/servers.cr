@@ -1,5 +1,15 @@
 module Ptero::Models
-  class AppServer
+  class AllocationData
+    include JSON::Serializable
+
+    property default : Int32
+    property additional : Array(Int32)?
+
+    def initialize(@default : Int32, @additional : Array(Int32)? = nil)
+    end
+  end
+
+  struct AppServer
     include JSON::Serializable
 
     getter id : Int32
@@ -30,6 +40,17 @@ module Ptero::Models
     getter installed : Int8
   end
 
+  class DeployData
+    include JSON::Serializable
+
+    property locations : Array(Int32)
+    property port_range : Array(String)
+    property dedicated_ip : Bool
+
+    def initialize(@locations : Array(Int32), @port_range : Array(String), @dedicated_ip : Bool)
+    end
+  end
+
   class FeatureLimits
     include JSON::Serializable
 
@@ -52,7 +73,7 @@ module Ptero::Models
     property threads : String?
     property? oom_disabled : Bool?
 
-    def initialize(@memory : Int32, @swap : Int32, @disk : Int32, @cpu : Int32, *,
+    def initialize(*, @memory : Int32, @swap : Int32, @disk : Int32, @cpu : Int32,
                    @io : Int32? = nil, @threads : String? = nil, @oom_disabled : Bool? = nil)
     end
   end
