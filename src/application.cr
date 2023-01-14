@@ -420,7 +420,31 @@ module Ptero
       resolve_error ex
     end
 
-    # def update_server_startup
+    # Updates a specified servers' startup configuration. For environment variables, unset fields
+    # will be replaced with the default values from the panel if set.
+    #
+    # ## Fields
+    # * startup (optional): the startup command for the server
+    # * environment (optional): a hash of environment variables to set for the server
+    # * egg (optional): the ID of the egg to use for the server
+    # * image (optional): the docker image to use for the server
+    def update_server_startup(id : Int32, *, startup : String? = nil,
+                              environment : Hash(String, String | Int32 | Bool | Nil)? = nil,
+                              egg : Int32? = nil, image : String? = nil) : Models::AppServer
+      server = get_server id
+      env = environment.try(&.merge(server.container.environment)) || server.container.environment
+      data = {
+        startup:     server.container.startup,
+        environment: env,
+        egg:         egg || server.egg,
+        image:       image || server.container.image,
+      }
+      model = @rest.patch "/api/application/servers/#{id}/startup", data.to_json
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
 
     # Suspends a specified server.
     def suspend_server(id : Int32) : Nil
