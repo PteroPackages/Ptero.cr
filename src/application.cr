@@ -362,9 +362,63 @@ module Ptero
       resolve_error ex
     end
 
-    # def update_server_build
+    # Updates the build configuration for a specified server. Fields that are not specified will
+    # fallback to their current values if set.
+    #
+    # ## Fields
+    #
+    # * allocation_id (optional): the ID of the primary allocation the server should use
+    # * oom_disabled (optional): whether the OOM killer should be disabled
+    # * limits (optional): the limits of the server
+    # * feature_limits (optional): the feature limits of the server
+    # * add_allocations (optional): a set of allocations to add to the server
+    # * remove_allocations (optional): a set of allocations to remove from the server
+    def update_server_build(id : Int32, *, allocation_id : Int32? = nil,
+                            oom_disabled : Bool? = nil, limits : Limits? = nil,
+                            feature_limits : FeatureLimits? = nil,
+                            add_allocations : Set(Int32) = Set(Int32).new,
+                            remove_allocations : Set(Int32) = Set(Int32).new) : Models::AppServer
+      server = get_server id
+      data = {
+        allocation_id:      allocation_id || server.allocation,
+        oom_disabled:       oom_disabled || server.limits.oom_disabled,
+        limits:             limits || server.limits,
+        feature_limits:     feature_limits || server.feature_limits,
+        add_allocations:    add_allocations,
+        remove_allocations: remove_allocations,
+      }
+      model = @rest.patch "/api/application/servers/#{id}/build", data.to_json
 
-    # def update_server_details
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
+    # Updates a specified server's details. Fields that are not specified will fallback to their
+    # current values if set.
+    #
+    # ## Fields
+    #
+    # * external_id (optional): the external identifier for the server, set to an empty string to
+    # remove it
+    # * name (optional): the name of the server
+    # * description (optional): a description of the server, set to an empty string to remove it
+    # * user (optional): the ID of the server owner
+    def update_server_details(id : Int32, *, external_id : String? = nil, name : String? = nil,
+                              description : String? = nil, user : Int32? = nil) : Models::AppServer
+      server = get_server id
+      data = {
+        external_id: external_id != "" ? external_id : server.external_id,
+        name:        name || server.name,
+        description: description != "" ? description : server.description,
+        user:        user || server.user,
+      }
+      model = @rest.patch "/api/application/servers/#{id}/details", data.to_json
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
 
     # def update_server_startup
 
