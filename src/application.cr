@@ -509,5 +509,26 @@ module Ptero
     rescue ex : Crest::RequestFailed
       resolve_error ex
     end
+
+    private macro def_get_all(name, model)
+      def get_all_{{name}}(*, include includes : Array(String)? = nil) : Array({{model}})
+        res = @rest.get "/api/application/{{name}}?" + resolve_query(nil, nil, nil, includes, nil)
+        model = Models::FractalList({{model}}).from_json res.body
+
+        total = model.data.map &.attributes
+        if model.pagination.total_pages > 1
+          (2..model.pagination.total_pages).each do |i|
+            res = @rest.get "/api/application/{{name}}?" + resolve_query(i, nil, nil, includes, nil)
+            total.concat model.data.map &.attributes
+          end
+        end
+
+        total
+      end
+    end
+
+    def_get_all users, Models::User
+    def_get_all servers, Models::AppServer
+    def_get_all nodes, Models::Node
   end
 end
