@@ -511,6 +511,11 @@ module Ptero
     end
 
     private macro def_get_all(name, model)
+      # Iterates over all pages from the API and returns an array of all the {{name}} in the panel.
+      #
+      # ## Parameters
+      #
+      # * include: additional resources to include in the response
       def get_all_{{name}}(*, include includes : Array(String)? = nil) : Array({{model}})
         res = @rest.get "/api/application/{{name}}?" + resolve_query(nil, nil, nil, includes, nil)
         model = Models::FractalList({{model}}).from_json res.body
