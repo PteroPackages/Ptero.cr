@@ -238,8 +238,8 @@ module Ptero
       resolve_error ex
     end
 
-    # Creates a user on the panel with the given fields, using the allocation object to select the
-    # node and additional allocations if specified.
+    # Creates a server on the panel with the given fields, using the allocation object to select
+    # the node and additional allocations if specified.
     #
     # ## Fields
     #
@@ -506,6 +506,57 @@ module Ptero
       res = @rest.get "/api/application/nodes/#{id}/configuration"
 
       Models::NodeConfiguration.from_json res.body
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
+    # Creates a node on the panel with the given fields.
+    #
+    # ## Fields
+    #
+    # * name: the name of the node
+    # * description (optional): the description of the node
+    # * location_id: the ID of the location to create the node under
+    # * public: whether the node should be publicly accessible
+    # * fqdn: the Fully Qualified Domain Name (FQDN) for the node
+    # * scheme: the HTTP scheme for the node to use
+    # * behind_proxy: whether the node is (or should be) behind a proxy
+    # * memory: the memory limit for the node
+    # * memory_overallocate: the amount of memory the node can overallocate
+    # * disK: the disk limit for the node
+    # * disk_overallocate: the amount of disk the node can overallocate
+    # * daemon_base: the daemon base for the node
+    # * daemon_sftp: the SFTP port for the node
+    # * daemon_listen: the listen port for the node
+    # * maintenance_mode: whether the node should be set to maintenance mode on creation
+    # * upload_size: the upload size limit for the node
+    def create_node(*, name : String, description : String? = nil, location_id : Int32,
+                    public : Bool, fqdn : String, scheme : String, behind_proxy : Bool,
+                    memory : Int32, memory_overallocate : Int32, disk : Int32,
+                    disk_overallocate : Int32, daemon_base : String, daemon_sftp : Int32,
+                    daemon_listen : Int32, maintenance_mode : Bool, upload_size : Int32) : Models::Node
+      data = {
+        name:                name,
+        description:         description,
+        location_id:         location_id,
+        public:              public,
+        fqdn:                fqdn,
+        scheme:              scheme,
+        behind_proxy:        behind_proxy,
+        memory:              memory,
+        memory_overallocate: memory_overallocate,
+        disk:                disk,
+        disk_overallocate:   disk_overallocate,
+        daemon_base:         daemon_base,
+        daemon_sftp:         daemon_sftp,
+        daemon_listen:       daemon_listen,
+        maintenance_mode:    maintenance_mode,
+        upload_size:         upload_size,
+      }
+      res = @rest.post "/api/application/nodes", data.to_json
+      model = Models::FractalItem(Models::Node).from_json res.body
+
+      model.attributes
     rescue ex : Crest::RequestFailed
       resolve_error ex
     end
