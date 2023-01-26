@@ -598,6 +598,13 @@ module Ptero
       resolve_error ex
     end
 
+    # Deletes a node by its ID. Note that this will not work if there are servers on the node.
+    def delete_node(id : Int32) : Nil
+      @rest.delete "/api/application/nodes/#{id}"
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
     private macro def_get_all(name, model)
       # Iterates over all pages from the API and returns an array of all the {{name}} in the panel.
       #
