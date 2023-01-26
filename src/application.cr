@@ -561,6 +561,43 @@ module Ptero
       resolve_error ex
     end
 
+    # Updates a node specified by its ID with the given fields (same as the fields for
+    # `create_node`). Any fields that aren't specified will be filled with the existing value
+    # from the panel.
+    def update_node(id : Int32, *, name : String? = nil, description : String? = nil,
+                    location_id : Int32? = nil, public : Int32? = nil, fqdn : String? = nil,
+                    scheme : String? = nil, behind_proxy : Bool? = nil, memory : Int32? = nil,
+                    memory_overallocate : Int32? = nil, disk : Int32? = nil,
+                    disk_overallocate : Int32? = nil, daemon_base : String? = nil,
+                    daemon_sftp : Int32? = nil, daemon_listen : Int32? = nil,
+                    maintenance_mode : Bool? = nil, upload_size : Int32? = nil) : Models::Node
+      node = get_node id
+      data = {
+        name:                name || node.name,
+        description:         description != "" ? description : node.description,
+        location_id:         location_id || node.location_id,
+        public:              public || node.public?,
+        fqdn:                fqdn || node.fqdn,
+        scheme:              scheme || node.scheme,
+        behind_proxy:        behind_proxy || node.behind_proxy?,
+        memory:              memory || node.memory,
+        memory_overallocate: memory_overallocate || node.memory_overallocate,
+        disk:                disk || node.disk,
+        disk_overallocate:   disk_overallocate || node.disk_overallocate,
+        daemon_base:         daemon_base || node.daemon_base,
+        daemon_sftp:         daemon_sftp || node.daemon_sftp,
+        daemon_listen:       daemon_listen || node.daemon_listen,
+        maintenance_mode:    maintenance_mode || node.maintenance_mode?,
+        upload_size:         upload_size || node.upload_size,
+      }
+      res = @rest.patch "/api/application/nodes/#{id}", data.to_json
+      model = Models::FractalItem(Models::Node).from_json res.body
+
+      model.attributes
+    rescue ex : Crest::RequestFailed
+      resolve_error ex
+    end
+
     private macro def_get_all(name, model)
       # Iterates over all pages from the API and returns an array of all the {{name}} in the panel.
       #
